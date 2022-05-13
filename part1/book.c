@@ -21,7 +21,8 @@ typedef struct order_list order_list_t;
 
 
 struct order_list {
-  // ADD THE FIELDS YOU WANT FOR YOUR LIST HERE
+  order_t *order;
+  order_list_t *next;
 };
 
 struct book {
@@ -29,4 +30,161 @@ struct book {
     order_list_t *pending;   // orders still in play.
 };
 
-// YOUR FUNCTIONS GO HERE
+/* make_buy_book: makes a buy book with just a dummy node in it
+ *
+ * Returns: pointer to the buy book
+ */
+struct book* make_buy_book() {
+  struct book *b = ck_malloc(sizeof(struct book), "make_buy_book");
+  b->type = BUY_BOOK;
+  order_list_t *dummy = ck_malloc(sizeof(order_list_t), "make_buy_book");
+  dummy->order = NULL;
+  dummy->next = NULL;
+  b->pending = dummy;
+  return b;
+}
+
+/* make_sell_book: makes a sell book with just a dummy node in it
+ *
+ * Returns: pointer to the sell book
+ */
+struct book* make_sell_book() {
+  struct book *b = ck_malloc(sizeof(struct book), "make_sell_book");
+  b->type = SELL_BOOK;
+  order_list_t *dummy = ck_malloc(sizeof(order_list_t), "make_sell_book");
+  dummy->order = NULL;
+  dummy->next = NULL;
+  b->pending = dummy;
+  return b;
+}
+
+/* add_buy_order: adds order to the buy book
+ *
+ * o: pointer to an order to add to the buy book
+ * buy: buy book
+ */
+void add_buy_order(order_t *o, struct book *buy) {
+  assert(is_buy_order(o));
+
+  order_list_t *add = ck_malloc(sizeof(order_list_t), "add_buy_order");
+  add->order = o;
+
+  // case 1: only a dummy node in the book
+  if (buy->pending->next == NULL) {
+    buy->pending->next = add;
+    add->next = NULL;
+    return;
+  }
+
+  // case 2: more than just the dummy node in the book
+  order_list_t *prev = buy->pending; // buy->pending is the dummy node
+  order_list_t *curr = buy->pending->next; // first order in the list
+  while (curr != NULL) {
+    if (curr->order->price < o->price) {
+      prev->next = add;
+      add->next = curr;
+      return;
+    } else if (curr->order->price == add->order->price) {
+      if (add->order->time < curr->order->time) {
+        prev->next = add;
+        add->next = curr;
+        return;
+      } 
+    }
+    prev = curr;
+    curr = curr->next;
+  }
+  prev->next = add;
+  add->next = NULL;
+}
+
+/* add_sell_order: add order to the sell book
+ *
+ * o: pointer to an order to add to the sell book
+ * sell: sell book
+ */
+ void add_sell_order(order_t *o, book_t *sell) {
+   assert(is_sell_order(o));
+
+  order_list_t *add = ck_malloc(sizeof(order_list_t), "add_sell_order");
+  add->order = o;
+
+  // case 1: only a dummy node in the book
+  if (sell->pending->next == NULL) {
+    sell->pending->next = add;
+    add->next = NULL;
+    return;
+  }
+
+  // case 2: more than just the dummy node in the book
+  order_list_t *prev = sell->pending; // buy->pending is the dummy node
+  order_list_t *curr = sell->pending->next; // first order in the list
+  while (curr != NULL) {
+    if (curr->order->price > add->order->price) {
+      prev->next = add;
+      add->next = curr;
+      return;
+    } else if (curr->order->price == add->order->price) {
+      if (add->order->time < curr->order->time) {
+        prev->next = add;
+        add->next = curr;
+        return;
+      } 
+    }
+    prev = curr;
+    curr = curr->next;
+  }
+  prev->next = add;
+  add->next = NULL;
+ }
+
+/* remove_order: removes order from book and frees the order
+ * 
+ * oref: oref of order to remove
+ * book: pointer to book to remove order from
+ */
+void remove_order(long long oref, struct book *book) {
+  // case 1: only a dummy node in the book
+  if (book->pending->next == NULL) {
+    return;
+  }
+
+  // case 2: more than just the dummy node in the book
+  order_list_t *prev = book->pending;
+  order_list_t *curr = book->pending->next;
+  while (curr != NULL) {
+    if (curr->order->oref == oref) {
+      prev = curr->next;
+      free_order(curr->order);
+      ck_free(curr);
+      return;
+      }
+    prev = curr;
+    curr = curr->next;
+    }
+  return;
+  }
+
+/* free_book: frees a book by freeing order lists then freeing the book
+ *
+ * book = pointer to book to be freed
+ */
+void free_book(struct book *book) {
+  if (book->pending->next == NULL) {
+    ck_free(book->pending);
+    ck_free(book);
+    return;
+  }
+
+  order_list_t *remove = book->pending;
+  order_list_t *curr = book->pending->next;
+  while (curr != NULL) {
+    if (remove->order != NULL) {
+      free_order(remove->order);
+    }
+    ck_free(remove);
+    remove = curr;
+    curr = curr->next;
+  }
+  ck_free(book);
+}

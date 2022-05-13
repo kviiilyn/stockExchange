@@ -18,12 +18,44 @@ enum book_type {BUY_BOOK, SELL_BOOK};
 typedef struct book book_t;
 
 
-/********** Modify below **********************/
+/* make_buy_book: makes a buy book with just a dummy node in it
+ *
+ * Returns: pointer to the buy book
+ */
+struct book* make_buy_book();
 
-// The prototypes for your public book functions
-// go here.  Don't forget to include header
-// comments that describe the purpose of the
-// functions, the arguments, and the return value.
+/* make_sell_book: makes a sell book with just a dummy node in it
+ *
+ * Returns: pointer to the sell book
+ */
+struct book* make_sell_book();
+
+/* add_buy_order: adds order to the buy book
+ *
+ * o: pointer to an order to add to the buy book
+ * buy: buy book
+ */
+void add_buy_order(order_t *o, struct book *buy);
+
+/* add_sell_order: add order to the sell book
+ *
+ * o: pointer to an order to add to the sell book
+ * sell: sell book
+ */
+void add_sell_order(order_t *o, book_t *sell);
+
+/* remove_order: removes order from book and frees the order
+ * 
+ * oref: oref of order to remove
+ * book: pointer to book to remove order from
+ */
+void remove_order(long long oref, struct book *book);
+
+/* free_book: frees a book by removing all the orders then freeing the book
+ *
+ * book = pointer to book to be freed
+ */
+void free_book(struct book *book);
 
 // Do not remove the next line
 #endif

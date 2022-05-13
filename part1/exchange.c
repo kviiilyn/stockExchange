@@ -4,14 +4,11 @@
  * 
  * You will modify this file
  *
- * Name: add your name here
- *   YOU MUST COMPLETE THIS SECTION
+ * Name: Kaitlyn Li
  *
- * Sources used:
- *   YOU MUST COMPLETE THIS SECTION
+ * Sources used: none
  *
- * People consulted:
- *   YOU MUST COMPLETE THIS SECTION
+ * People consulted: none
  */
 
 #include <assert.h>
@@ -39,9 +36,11 @@ struct exchange {
  * Returns: an exchange
  */
 exchange_t *mk_exchange(char *ticker) {
-    // You are REQUIRED to complete this function
-    // replace NULL with a suitable value
-    return NULL;
+    exchange_t *ex = ck_malloc(sizeof(exchange_t), "mk_exchange");
+    ex->ticker = ticker;
+    ex->buy = make_buy_book();
+    ex->sell = make_sell_book();
+    return ex;
 }
 
 /*
@@ -51,7 +50,12 @@ exchange_t *mk_exchange(char *ticker) {
  * exchange: an exchange
  */
 void free_exchange(exchange_t *exchange) {
-    // You are REQUIRED to complete this function
+    free_book(exchange->buy);
+    free_book(exchange->sell);
+    if (exchange->ticker != NULL) {
+        free(exchange->ticker);
+    }
+    ck_free(exchange);
 }
 
 

@@ -14,6 +14,8 @@
 #include "book.h"
 #include "util.h"
  
+#define MAX_ORDER_LEN 1000
+
 /* These types are not visible outside this file.
  * Do NOT move them.
  */
@@ -103,7 +105,7 @@ void add_buy_order(order_t *o, struct book *buy) {
  * o: pointer to an order to add to the sell book
  * sell: sell book
  */
- void add_sell_order(order_t *o, book_t *sell) {
+void add_sell_order(order_t *o, book_t *sell) {
    assert(is_sell_order(o));
 
   order_list_t *add = ck_malloc(sizeof(order_list_t), "add_sell_order");
@@ -136,7 +138,22 @@ void add_buy_order(order_t *o, struct book *buy) {
   }
   prev->next = add;
   add->next = NULL;
- }
+}
+
+/* first_in_book: takes a book and returns the first order in it that is not
+ *    the dummy node
+ *
+ * b: pointer to a struct book
+ *
+ * Returns: pointer to order_t
+ */
+order_t* first_in_book(struct book *b) {
+  if (b->pending->next == NULL) {
+    return NULL;
+  } else {
+    return b->pending->next->order;
+  }
+}
 
 /* remove_order: removes order from book and frees the order
  * 
@@ -154,14 +171,14 @@ void remove_order(long long oref, struct book *book) {
   order_list_t *curr = book->pending->next;
   while (curr != NULL) {
     if (curr->order->oref == oref) {
-      prev = curr->next;
+      prev->next = curr->next;
       free_order(curr->order);
       ck_free(curr);
       return;
       }
     prev = curr;
     curr = curr->next;
-    }
+  }
   return;
   }
 
@@ -187,4 +204,60 @@ void free_book(struct book *book) {
     curr = curr->next;
   }
   ck_free(book);
+}
+
+/* print_buy_book: prints the contents of a buy book (without dummy node)
+ * 
+ * b: pointer to a buy book
+ */
+void print_buy_book(struct book *b) {
+
+  printf("buy book: ");
+
+  if (b->pending->next == NULL) {
+    printf("empty \n");
+    return;
+  } else {
+    printf("\n");
+  }
+
+  order_list_t *curr = b->pending->next;
+
+  printf("\t");
+  printf("%s\t(best buy price)\n", to_string_order(curr->order));
+  curr = curr->next;
+
+  while (curr != NULL) {
+    printf("\t");
+    printf("%s\n", to_string_order(curr->order));
+    curr = curr->next;
+  }
+}
+
+/* print_sell_book: prints the contents of a sell book (without dummy node)
+ * 
+ * b: pointer to a sell book
+ */
+void print_sell_book(struct book *b) {
+
+  printf("sell book: ");
+
+  if (b->pending->next == NULL) {
+    printf("empty \n");
+    return;
+  } else {
+    printf("\n");
+  }
+
+  order_list_t *curr = b->pending->next;
+
+  printf("\t");
+  printf("%s\t(best sell price)\n", to_string_order(curr->order));
+  curr = curr->next;
+
+  while (curr != NULL) {
+    printf("\t");
+    printf("%s\n", to_string_order(curr->order));
+    curr = curr->next;
+  }
 }

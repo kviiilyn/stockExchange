@@ -37,7 +37,7 @@ struct exchange {
  */
 exchange_t *mk_exchange(char *ticker) {
     exchange_t *ex = ck_malloc(sizeof(exchange_t), "mk_exchange");
-    ex->ticker = ticker;
+    ex->ticker = ck_strdup(ticker, "mk_exchange");
     ex->buy = make_buy_book();
     ex->sell = make_sell_book();
     return ex;
@@ -70,10 +70,50 @@ void free_exchange(exchange_t *exchange) {
 action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
     assert(exchange != NULL);
     assert(ord_str != NULL);
+    order_t *o = mk_order_from_line(ord_str, time);
+    action_report_t *ret = mk_action_report(o->ticker);
 
-    // YOU ARE REQUIRED TO COMPLETE THIS FUNCTION
-    // replace NULL with a suitable value
-    return NULL;
+    if (o->book == 'B') {
+        while (o->shares > 0) {
+            order_t *first = first_in_book(exchange->sell);
+            if (first == NULL || first->price > o->price) {
+                add_buy_order(o, exchange->buy);
+                add_action(ret, BOOKED_BUY, o->oref, o->price, 
+                    o->shares);
+                return ret;
+            } else if (first->shares > o->shares) {
+                first->shares -= o->shares;
+                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                return ret;
+            } else {
+                o->shares -= first->shares;
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                remove_order(first->oref, exchange->sell);
+            }
+        }
+        return ret;
+    } else {
+        while (o->shares > 0) {
+            order_t *first = first_in_book(exchange->buy);
+            if (first == NULL || first->price < o->price) {
+                add_sell_order(o, exchange->sell);
+                add_action(ret, BOOKED_SELL, o->oref, o->price, 
+                    o->shares);
+                return ret;
+            } else if (first->shares > o->shares) {
+                first->shares -= o->shares;
+                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                return ret;
+            } else {
+                o->shares -= first->shares;
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                remove_order(first->oref, exchange->buy);
+            }
+        }
+        return ret;
+    }
 }
 
 /*
@@ -82,5 +122,10 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
  * exchange: the exchange.
  */
 void print_exchange(exchange_t *exchange) {
-    // This function is optional, but highly recommended.
+    printf("INET %s ", exchange->ticker);
+    print_buy_book(exchange->buy);
+    printf("\n");
+    printf("INET %s ", exchange->ticker);
+    print_sell_book(exchange->sell);
+    printf("\n\n");
 }

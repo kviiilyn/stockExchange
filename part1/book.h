@@ -44,6 +44,15 @@ void add_buy_order(order_t *o, struct book *buy);
  */
 void add_sell_order(order_t *o, book_t *sell);
 
+/* first_in_book: takes a book and returns the first order in it that is not
+ *    the dummy node
+ *
+ * b: pointer to a struct book
+ *
+ * Returns: pointer to order_t
+ */
+order_t* first_in_book(struct book *b);
+
 /* remove_order: removes order from book and frees the order
  * 
  * oref: oref of order to remove
@@ -56,6 +65,18 @@ void remove_order(long long oref, struct book *book);
  * book = pointer to book to be freed
  */
 void free_book(struct book *book);
+
+/* print_buy_book: prints the contents of a buy book (without dummy node)
+ * 
+ * b: pointer to a buy book
+ */
+void print_buy_book(struct book *b);
+
+/* print_sell_book: prints the contents of a sell book (without dummy node)
+ * 
+ * b: pointer to a sell book
+ */
+void print_sell_book(struct book *b);
 
 // Do not remove the next line
 #endif

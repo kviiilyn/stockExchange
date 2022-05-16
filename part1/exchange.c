@@ -80,10 +80,12 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
                 add_buy_order(o, exchange->buy);
                 add_action(ret, BOOKED_BUY, o->oref, o->price, 
                     o->shares);
+                free_order(o);
                 return ret;
             } else if (first->shares > o->shares) {
                 first->shares -= o->shares;
                 add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                free_order(o);
                 return ret;
             } else {
                 o->shares -= first->shares;
@@ -100,10 +102,12 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
                 add_sell_order(o, exchange->sell);
                 add_action(ret, BOOKED_SELL, o->oref, o->price, 
                     o->shares);
+                free_order(o);
                 return ret;
             } else if (first->shares > o->shares) {
                 first->shares -= o->shares;
                 add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                free_order(o);
                 return ret;
             } else {
                 o->shares -= first->shares;
@@ -112,6 +116,7 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
                 remove_order(first->oref, exchange->buy);
             }
         }
+        free_order(o);
         return ret;
     }
 }

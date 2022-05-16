@@ -119,7 +119,7 @@ void add_sell_order(order_t *o, book_t *sell) {
   }
 
   // case 2: more than just the dummy node in the book
-  order_list_t *prev = sell->pending; // buy->pending is the dummy node
+  order_list_t *prev = sell->pending; // sell->pending is the dummy node
   order_list_t *curr = sell->pending->next; // first order in the list
   while (curr != NULL) {
     if (curr->order->price > add->order->price) {
@@ -222,14 +222,20 @@ void print_buy_book(struct book *b) {
   }
 
   order_list_t *curr = b->pending->next;
+  
+  char *str = to_string_order(curr->order);
 
   printf("\t");
   printf("%s\t(best buy price)\n", to_string_order(curr->order));
   curr = curr->next;
 
+  free(str);
+
   while (curr != NULL) {
+    str = to_string_order(curr->order);
     printf("\t");
-    printf("%s\n", to_string_order(curr->order));
+    printf("%s\n", str);
+    free(str);
     curr = curr->next;
   }
 }
@@ -251,13 +257,19 @@ void print_sell_book(struct book *b) {
 
   order_list_t *curr = b->pending->next;
 
+  char *str = to_string_order(curr->order);
+
   printf("\t");
-  printf("%s\t(best sell price)\n", to_string_order(curr->order));
+  printf("%s\t(best sell price)\n", str);
   curr = curr->next;
 
+  free(str);
+
   while (curr != NULL) {
+    str = to_string_order(curr->order);
     printf("\t");
-    printf("%s\n", to_string_order(curr->order));
+    printf("%s\n", str);
+    free(str);
     curr = curr->next;
   }
 }

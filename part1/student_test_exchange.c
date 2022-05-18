@@ -143,7 +143,7 @@ int main() {
      do_a_few();
 
     // uncomment to process all the samples order
-    // do_all();
+   do_all();
 
     do_handout();
 

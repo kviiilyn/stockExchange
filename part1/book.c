@@ -203,6 +203,10 @@ void free_book(struct book *book) {
     remove = curr;
     curr = curr->next;
   }
+  if (remove->order != NULL) {
+    free_order(remove->order);
+  }
+  ck_free(remove);
   ck_free(book);
 }
 
@@ -222,20 +226,14 @@ void print_buy_book(struct book *b) {
   }
 
   order_list_t *curr = b->pending->next;
-  
-  char *str = to_string_order(curr->order);
 
   printf("\t");
-  printf("%s\t(best buy price)\n", to_string_order(curr->order));
+  print_order(curr->order);
   curr = curr->next;
 
-  free(str);
-
   while (curr != NULL) {
-    str = to_string_order(curr->order);
     printf("\t");
-    printf("%s\n", str);
-    free(str);
+    print_order(curr->order);
     curr = curr->next;
   }
 }
@@ -257,19 +255,13 @@ void print_sell_book(struct book *b) {
 
   order_list_t *curr = b->pending->next;
 
-  char *str = to_string_order(curr->order);
-
   printf("\t");
-  printf("%s\t(best sell price)\n", str);
+  print_order(curr->order);
   curr = curr->next;
 
-  free(str);
-
   while (curr != NULL) {
-    str = to_string_order(curr->order);
     printf("\t");
-    printf("%s\n", str);
-    free(str);
+    print_order(curr->order);
     curr = curr->next;
   }
 }

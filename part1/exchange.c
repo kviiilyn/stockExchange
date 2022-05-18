@@ -80,20 +80,26 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
                 add_buy_order(o, exchange->buy);
                 add_action(ret, BOOKED_BUY, o->oref, o->price, 
                     o->shares);
-                free_order(o);
                 return ret;
             } else if (first->shares > o->shares) {
-                first->shares -= o->shares;
                 add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                first->shares -= o->shares;
                 free_order(o);
                 return ret;
-            } else {
+            } else if (o->shares > first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
                 o->shares -= first->shares;
+                remove_order(first->oref, exchange->sell);
+            } else if (o->shares == first->shares) {
                 add_action(ret, EXECUTE, first->oref, first->price, 
                     first->shares);
                 remove_order(first->oref, exchange->sell);
+                free_order(o);
+                return ret;
             }
         }
+        free_order(o);
         return ret;
     } else {
         while (o->shares > 0) {
@@ -102,18 +108,23 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
                 add_sell_order(o, exchange->sell);
                 add_action(ret, BOOKED_SELL, o->oref, o->price, 
                     o->shares);
-                free_order(o);
                 return ret;
             } else if (first->shares > o->shares) {
-                first->shares -= o->shares;
                 add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                first->shares -= o->shares;
                 free_order(o);
                 return ret;
-            } else {
+            } else if (o->shares > first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
                 o->shares -= first->shares;
+                remove_order(first->oref, exchange->buy);
+            } else if (o->shares == first->shares) {
                 add_action(ret, EXECUTE, first->oref, first->price, 
                     first->shares);
                 remove_order(first->oref, exchange->buy);
+                free_order(o);
+                return ret;
             }
         }
         free_order(o);

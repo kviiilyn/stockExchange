@@ -135,15 +135,19 @@ void do_handout() {
     run_test(handout_orders, orders_to_use, num_orders, times);
 }
 
+
 int main() {
     // uncomment to check exchange constructor and free before trying
     // any orders.
+    printf("----- do_none -----\n\n");
      do_none();
-
+    printf("----- do_a_few -----\n\n");
      do_a_few();
 
     // uncomment to process all the samples order
+    printf("----- do_all ----- \n\n");
    do_all();
+   printf("----- do_handout -----\n\n");
 
     do_handout();
 

@@ -1,0 +1,6 @@
+test_exchange
+*.dSYM
+*~
+a.out
+student_test_exchange
+simulate

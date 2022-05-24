@@ -31,9 +31,11 @@ struct exchange {
  * Returns: an exchange
  */
 exchange_t *mk_exchange(char *ticker) {
-    // You are REQUIRED to complete this function
-    // replace NULL with a suitable value
-    return NULL;
+    exchange_t *ex = ck_malloc(sizeof(exchange_t), "mk_exchange");
+    ex->ticker = ck_strdup(ticker, "mk_exchange");
+    ex->buy = make_buy_book();
+    ex->sell = make_sell_book();
+    return ex;
 }
 
 /*
@@ -43,7 +45,12 @@ exchange_t *mk_exchange(char *ticker) {
  * exchange: an exchange
  */
 void free_exchange(exchange_t *exchange) {
-    // You are REQUIRED to complete this function
+    free_book(exchange->buy);
+    free_book(exchange->sell);
+    if (exchange->ticker != NULL) {
+        free(exchange->ticker);
+    }
+    ck_free(exchange);
 }
 
 
@@ -59,9 +66,102 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
     assert(exchange != NULL);
     assert(ord_str != NULL);
 
-    // YOU ARE REQUIRED TO COMPLETE THIS FUNCTION
-    // replace NULL with a suitable value
-    return NULL;
+    order_t *o = mk_order_from_line(ord_str, time);
+    action_report_t *ret = mk_action_report(o->ticker);
+
+    if ((o->type == 'A') && (o->book == 'B')) {
+        while (o->shares > 0) {
+            order_t *first = first_in_book(exchange->sell);
+            if (first == NULL || first->price > o->price) {
+                add_order(o, exchange->buy);
+                add_action(ret, BOOKED_BUY, o->oref, o->price, 
+                    o->shares);
+                return ret;
+            } else if (first->shares > o->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                first->shares -= o->shares;
+                free_order(o);
+                return ret;
+            } else if (o->shares > first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                o->shares -= first->shares;
+                remove_order(first->oref, exchange->sell);
+            } else if (o->shares == first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                remove_order(first->oref, exchange->sell);
+                free_order(o);
+                return ret;
+            }
+        }
+        free_order(o);
+        return ret;
+    } else if ((o->type == 'A') && (o->book == 'S')) {
+        while (o->shares > 0) {
+            order_t *first = first_in_book(exchange->buy);
+            if (first == NULL || first->price < o->price) {
+                add_order(o, exchange->sell);
+                add_action(ret, BOOKED_SELL, o->oref, o->price, 
+                    o->shares);
+                return ret;
+            } else if (first->shares > o->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
+                first->shares -= o->shares;
+                free_order(o);
+                return ret;
+            } else if (o->shares > first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                o->shares -= first->shares;
+                remove_order(first->oref, exchange->buy);
+            } else if (o->shares == first->shares) {
+                add_action(ret, EXECUTE, first->oref, first->price, 
+                    first->shares);
+                remove_order(first->oref, exchange->buy);
+                free_order(o);
+                return ret;
+            }
+        }
+        free_order(o);
+        return ret;
+    } else if (o->type == 'C') {
+        book_t *bk;
+        if (o->book == 'B') {
+            bk = exchange->buy;
+        } else {
+            bk = exchange->sell;
+        }
+        order_t *found = find_order(o->oref, bk);
+        
+        if (found == NULL) {
+            free_order(o);
+            return ret;
+        }
+
+        if (found->shares <= o->shares) {
+            if (o->book == 'B') {
+                add_action(ret, CANCEL_BUY, o->oref, o->price, found->shares);
+                remove_order(o->oref, bk);
+                free_order(o);
+            } else {
+                add_action(ret, CANCEL_SELL, o->oref, o->price, found->shares);
+                remove_order(o->oref, bk);
+                free_order(o);
+            }
+        } else {
+            if (o->book == 'B') {
+                add_action(ret, CANCEL_BUY, o->oref, found->price, o->shares);
+                found->shares -= o->shares;
+                free_order(o);
+            } else {
+                add_action(ret, CANCEL_SELL, o->oref, found->price, o->shares);
+                found->shares -= o->shares;
+                free_order(o);
+            }
+        }
+    }
+    return ret;
 }
 
 /*
@@ -70,5 +170,8 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
  * exchange: the exchange.
  */
 void print_exchange(exchange_t *exchange) {
-    // This function is optional, but highly recommended.
+    printf("Ticker: %s\n", exchange->ticker);
+    print_buy_book(exchange->buy);
+    printf("\n");
+    print_sell_book(exchange->sell);
 }

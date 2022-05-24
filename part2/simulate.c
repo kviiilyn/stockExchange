@@ -4,14 +4,11 @@
  * 
  * You will modify this file
  *
- * Name: add your name here
- *   YOU MUST COMPLETE THIS SECTION
+ * Name: Kaitlyn Li
  *
- * Sources used:
- *   YOU MUST COMPLETE THIS SECTION
+ * Sources used: none
  *
- * People consulted:
- *   YOU MUST COMPLETE THIS SECTION
+ * People consulted: none
  */
 
 #include <stdlib.h>

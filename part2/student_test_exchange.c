@@ -178,9 +178,9 @@ void do_handout() {
 int main() {
     // uncomment to check exchange constructor and free before trying
     // any orders.
-    // do_none();
+     do_none();
 
-    // do_a_few();
+     do_a_few();
 
     // uncomment to process all the samples order
     // do_all();

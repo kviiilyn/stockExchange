@@ -202,10 +202,12 @@ int main() {
     print_order(o2);
     */
 
-    int i =97;
-    printf("%d \n", i);
-    char j = (char)i;
-    printf("%c \n", j);
+  /*
+    int i = 10;
+    printf("%d", i);
+    char j = int_to_char(i);
+    printf("%c", j);
+    */
 
 
 

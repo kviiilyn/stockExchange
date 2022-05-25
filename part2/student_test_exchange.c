@@ -176,18 +176,40 @@ void do_handout() {
 
 
 int main() {
-    // uncomment to check exchange constructor and free before trying
-    // any orders.
-     do_none();
+  // uncomment to check exchange constructor and free before trying
+  // any orders.
+  //do_none();
 
-     do_a_few();
+//do_a_few();
 
     // uncomment to process all the samples order
-    // do_all();
+  //do_all();
 
-    // do_handout();
+  //do_handout();
 
-    do_cancel();
+    /*
+    printf("\n\n----- testing swap ----- \n\n");
+    order_t *o1 = mk_order_from_line("I,UOCCS,A,S,100,550000,1000", 10);
+    order_t *o2 = mk_order_from_line("I,UOCCS,A,B,70,558000,1070", 20);
+    printf("o1: ");
+    print_order(o1);
+    printf("o2: ");
+    print_order(o2);
+    swap(o1, o2);
+    printf("o1: ");
+    print_order(o1);
+    printf("o2: ");
+    print_order(o2);
+    */
+
+    int i =97;
+    printf("%d \n", i);
+    char j = (char)i;
+    printf("%c \n", j);
+
+
+
+  //do_cancel();
 }
 
 

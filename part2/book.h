@@ -37,7 +37,7 @@ struct book* make_buy_book();
  */
 struct book* make_sell_book();
 
-/* swap: swaps the positions being pointed at of two pointers to orders
+/* swap: swaps the orders at two pointers
  *
  * a: pointer to the first order
  * b: pointer to the second order
@@ -76,14 +76,14 @@ void sift_up_min(order_t **heap, int occupied);
  */
 void sift_up_max(order_t **heap, int occupied);
 
-/* insert: inserts an order into a book, reallocates space if needed
+/* insert: inserts an order into a book
  *
  * bk: pointer to the book for the order to be added to
  * o: order to be added
  */
 void insert(book_t *bk, order_t *o);
 
-/* add_order: adds order to a book
+/* add_order: adds order to a book, reallocates space if needed
  *
  * o: pointer to an order to add to the book
  * bk: pointer to a book
@@ -138,6 +138,13 @@ void remove_order(long long oref, struct book *book);
  * book = pointer to book to be freed
  */
 void free_book(struct book *book);
+
+/* orders_match: returns true if orders "match" (ie can produce a trade)
+ *
+ * o1: pointer to the first order
+ * o2: pointer to the second order
+ */
+bool orders_match(order_t *o1, order_t *o2);
 
 /* print_buy_book: prints the contents of a buy book (without dummy node)
  * 

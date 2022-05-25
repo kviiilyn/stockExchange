@@ -69,69 +69,52 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
     order_t *o = mk_order_from_line(ord_str, time);
     action_report_t *ret = mk_action_report(o->ticker);
 
-    if ((o->type == 'A') && (o->book == 'B')) {
+    if (o->type == 'A') {
+        order_t *f;
+        book_t *bk;
         while (o->shares > 0) {
-            order_t *first = first_in_book(exchange->sell);
-            if (first == NULL || first->price > o->price) {
-                add_order(o, exchange->buy);
-                add_action(ret, BOOKED_BUY, o->oref, o->price, 
-                    o->shares);
+            if (is_buy_order(o)) {
+                f = first_in_book(exchange->sell);
+                bk = exchange->sell;
+            } else {
+                f = first_in_book(exchange->buy);
+                bk = exchange->buy;
+            }
+
+            if ((f == NULL) || !(orders_match(o, f))) {
+                if (is_buy_order(o)) {
+                    add_action(ret, BOOKED_BUY, o->oref, o->price, o->shares);
+                    add_order(o, exchange->buy);
+                } else {
+                    add_action(ret, BOOKED_SELL, o->oref, o->price, o->shares);
+                    add_order(o, exchange->sell);
+                }
                 return ret;
-            } else if (first->shares > o->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
-                first->shares -= o->shares;
-                free_order(o);
-                return ret;
-            } else if (o->shares > first->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, 
-                    first->shares);
-                o->shares -= first->shares;
-                remove_order(first->oref, exchange->sell);
-            } else if (o->shares == first->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, 
-                    first->shares);
-                remove_order(first->oref, exchange->sell);
-                free_order(o);
-                return ret;
+            } else {
+                if (o->shares >= f->shares) {
+                    add_action(ret, EXECUTE, f->oref, f->price, f->shares);
+                    o->shares -= f->shares;
+                    remove_order(f->oref, bk);
+                    if (o->shares == 0) {
+                        free_order(o);
+                        return ret;
+                    }
+                } else {
+                    add_action(ret, EXECUTE, f->oref, f->price, o->shares);
+                    f->shares -= o->shares;
+                    free_order(o);
+                    return ret;
+                }
             }
         }
-        free_order(o);
-        return ret;
-    } else if ((o->type == 'A') && (o->book == 'S')) {
-        while (o->shares > 0) {
-            order_t *first = first_in_book(exchange->buy);
-            if (first == NULL || first->price < o->price) {
-                add_order(o, exchange->sell);
-                add_action(ret, BOOKED_SELL, o->oref, o->price, 
-                    o->shares);
-                return ret;
-            } else if (first->shares > o->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, o->shares);
-                first->shares -= o->shares;
-                free_order(o);
-                return ret;
-            } else if (o->shares > first->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, 
-                    first->shares);
-                o->shares -= first->shares;
-                remove_order(first->oref, exchange->buy);
-            } else if (o->shares == first->shares) {
-                add_action(ret, EXECUTE, first->oref, first->price, 
-                    first->shares);
-                remove_order(first->oref, exchange->buy);
-                free_order(o);
-                return ret;
-            }
-        }
-        free_order(o);
-        return ret;
-    } else if (o->type == 'C') {
+    } else {
         book_t *bk;
         if (o->book == 'B') {
             bk = exchange->buy;
         } else {
             bk = exchange->sell;
         }
+        
         order_t *found = find_order(o->oref, bk);
         
         if (found == NULL) {
@@ -142,24 +125,19 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
         if (found->shares <= o->shares) {
             if (o->book == 'B') {
                 add_action(ret, CANCEL_BUY, o->oref, o->price, found->shares);
-                remove_order(o->oref, bk);
-                free_order(o);
             } else {
                 add_action(ret, CANCEL_SELL, o->oref, o->price, found->shares);
-                remove_order(o->oref, bk);
-                free_order(o);
             }
+            remove_order(o->oref, bk);
         } else {
             if (o->book == 'B') {
                 add_action(ret, CANCEL_BUY, o->oref, found->price, o->shares);
-                found->shares -= o->shares;
-                free_order(o);
             } else {
                 add_action(ret, CANCEL_SELL, o->oref, found->price, o->shares);
-                found->shares -= o->shares;
-                free_order(o);
             }
+            found->shares -= o->shares;
         }
+        free_order(o);
     }
     return ret;
 }

@@ -56,15 +56,21 @@ struct book* make_sell_book(){
     return bk;
 }
 
-/* swap: swaps the positions being pointed at of two pointers to orders
+/* swap: swaps the orders at two pointers
  *
  * a: pointer to the first order
  * b: pointer to the second order
  */
 void swap(order_t *a, order_t *b) {
+    order_t help = *a;
+    *a = *b;
+    *b = help;
+
+    /* what i had before
     order_t *help = a;
     a = b;
     b = help;
+    */
 }
 
 /* compare_orders_min: compares two orders in a min heap
@@ -98,9 +104,6 @@ bool compare_orders_max(order_t *o1, order_t *o2) {
  */
 void sift_up_min(order_t **heap, int occupied) {
     int parent;
-    if (occupied == 0) {
-        return;
-    }
     int i = occupied - 1;    
     while (i > 0) {
         parent = (i - 1)/2;
@@ -121,9 +124,6 @@ void sift_up_min(order_t **heap, int occupied) {
 void sift_up_max(order_t **heap, int occupied) {
     int parent;
     int i = occupied - 1;
-    if (occupied == 0) {
-        return;
-    }
     while (i > 0) {
         parent = (i - 1)/2;
         if (compare_orders_max(heap[i], heap[parent])) {
@@ -135,21 +135,12 @@ void sift_up_max(order_t **heap, int occupied) {
     }
 }
 
-/* insert: inserts an order into a book, reallocates space if needed
+/* insert: inserts an order into a book
  *
  * bk: pointer to the book for the order to be added to
  * o: order to be added
  */
 void insert(book_t *bk, order_t *o) {
-    bk->occupied += 1;
-    if (bk->occupied >= bk->slots) {
-        bk->heap = ck_realloc(bk->heap, sizeof(order_t*) * (bk->slots + 10), 
-                "insert");
-        bk->slots += 10;
-        for (int i = bk->occupied; i<bk->slots; i++) {
-            bk->heap[i] = NULL;
-        }
-    }
     bk->heap[bk->occupied - 1] = o;
     switch (bk->type) {
         case BUY_BOOK:
@@ -161,13 +152,23 @@ void insert(book_t *bk, order_t *o) {
     }
 }
 
-/* add_order: adds order to a book
+/* add_order: adds order to a book, reallocates space if needed
  *
  * o: pointer to an order to add to the book
  * bk: pointer to a book
  */
 void add_order(order_t *o, struct book *bk) {
+    bk->occupied += 1;
+    if (bk->occupied >= bk->slots) {
+        bk->heap = (order_t**)ck_realloc(bk->heap, 
+                sizeof(order_t*) * (bk->slots + 10), "add_order");
+        bk->slots += 10;
+        for (int i = bk->occupied; i<bk->slots; i++) {
+            bk->heap[i] = NULL;
+        }
+    }
     insert(bk, o);
+
 }
 
 /* first_in_book: takes a book and returns the first order in it that is not
@@ -189,19 +190,17 @@ order_t* first_in_book(struct book *b) {
  * i: the index to start sifting down
  */
 void sift_down_min(order_t **heap, int occupied, int i) {
-    int j = 0;
-    // j will always be 0, loop will end once it is done sifting down
-    while (j != 1) {
+    while (1) {
         int min_i = i;
         int lk = 2*i + 1;
         int rk = 2*i + 2;
         if (lk < occupied) {
-            if (heap[lk] < heap[min_i]) {
+            if (compare_orders_min(heap[lk], heap[min_i])) {
                 min_i = lk;
             }
         }
         if (rk < occupied) {
-            if (heap[rk] < heap[min_i]) {
+            if (compare_orders_min(heap[rk], heap[min_i])) {
                 min_i = rk;
             }
         }
@@ -221,19 +220,17 @@ void sift_down_min(order_t **heap, int occupied, int i) {
  * i: the index to start sifting down
  */
 void sift_down_max(order_t **heap, int occupied, int i) {
-    int j = 0;
-    // j will always be 0, loop will end once it is done sifting down
-    while (j != 1) {
+    while (1) {
         int max_i = i;
         int lk = 2*i + 1;
         int rk = 2*i + 2;
         if (lk < occupied) {
-            if (heap[lk] > heap[max_i]) {
+            if (compare_orders_max(heap[lk], heap[max_i])) {
                 max_i = lk;
             }
         }
         if (rk < occupied) {
-            if (heap[rk] > heap[max_i]) {
+            if (compare_orders_max(heap[rk], heap[max_i])) {
                 max_i = rk;
             }
         }
@@ -275,14 +272,19 @@ order_t* find_order(long long oref, struct book *book) {
  */
 void remove_order(long long oref, struct book *book) {
     int i = 0;
+    bool found = false;
     for (; i<book->occupied; i++) {
         if (book->heap[i]->oref == oref) {
+            found = true;
             break;
         }
     }
+    if (!found) {
+        return;
+    }
     int last_i = book->occupied - 1;
-    free_order(book->heap[i]);
-    book->heap[i] = book->heap[last_i];
+    swap(book->heap[i], book->heap[last_i]);
+    free_order(book->heap[last_i]);
     book->occupied -= 1;
     book->heap[last_i] = NULL;
     switch (book->type) {
@@ -290,7 +292,7 @@ void remove_order(long long oref, struct book *book) {
             sift_down_max(book->heap, book->occupied, i);
             break;
         case SELL_BOOK:
-            sift_down_max(book->heap, book->occupied, i);
+            sift_down_min(book->heap, book->occupied, i);
             break;
     }
 }
@@ -348,6 +350,25 @@ void print_buy_book(struct book *b) {
     for (int i = 0; i<b->occupied; i++) {
         printf("\t");
         print_order(ordered[i]);
+    }
+
+    ck_free(ordered);
+}
+
+/* orders_match: returns true if orders "match" (ie can produce a trade)
+ *
+ * o1: pointer to the first order
+ * o2: pointer to the second order
+ */
+bool orders_match(order_t *o1, order_t *o2) {
+    if (! ((is_buy_order(o1) && is_sell_order(o2)) ||
+            (is_sell_order(o1) && is_buy_order(o2)))) {
+        return false;
+    }
+    if (is_buy_order(o1)) {
+        return (o1->price >= o2->price);
+    } else {
+        return (o1->price <= o2->price);
     }
 }
 

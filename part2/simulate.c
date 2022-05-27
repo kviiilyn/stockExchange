@@ -34,6 +34,7 @@ void process_order_write_ar(exchange_t *ex, char *o, int time, FILE *out) {
 }
 
 int main(int argc, char **argv) {
+    assert(argc == 3);
     exchange_t *ex = mk_exchange(argv[1]);
     char *openf;
     char *outf;

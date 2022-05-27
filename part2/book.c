@@ -67,12 +67,6 @@ void swap(order_t *a, order_t *b) {
     order_t help = *a;
     *a = *b;
     *b = help;
-
-    /* what i had before
-    order_t *help = a;
-    a = b;
-    b = help;
-    */
 }
 
 /* compare_orders_min: compares two orders in a min heap

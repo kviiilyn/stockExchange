@@ -73,18 +73,24 @@ int main(int argc, char **argv) {
             "Unable to allocate order_s");
 
     while (!feof(fp)) {
-        for (int i = 0; a != '\n'; i++) {
+        for (int i = 0;; i++) {
             c = fgetc(fp);
+            if (feof(fp)) {
+                break;
+            }
             a = int_to_char(c);
             if (a != '\n') {
                 order_s[i] = a;
             } else {
-                order_s(i) = '\0';
+                order_s[i] = '\0';
+                break;
             }
+        }
+        if (feof(fp)) {
+            break;
         }
         process_order_write_ar(ex, order_s, time, ofp);
         time++;
-        a = 'a'; // anything but '\n' so the for loop will run
     }
     free(openf);
     free(outf);

@@ -100,9 +100,9 @@ int main(int argc, char **argv) {
             process_order_write_ar(ex, order_s, time, ofp);
             time++;
             free(order_s);
-            if ((time > 0) && (time < 413)) {
+            /*if ((time >= 411) && (time <= 413)) {
                 print_exchange(ex);
-            }
+            }*/
             if (feof(fp)) {
                 break;
             }

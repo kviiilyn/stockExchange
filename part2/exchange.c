@@ -148,8 +148,10 @@ action_report_t  *process_order(exchange_t *exchange, char *ord_str, int time) {
  * exchange: the exchange.
  */
 void print_exchange(exchange_t *exchange) {
-    printf("Ticker: %s\n", exchange->ticker);
+    printf("INET %s ", exchange->ticker);
     print_buy_book(exchange->buy);
     printf("\n");
+    printf("INET %s ", exchange->ticker);
     print_sell_book(exchange->sell);
+    printf("\n\n");
 }

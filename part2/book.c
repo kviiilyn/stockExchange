@@ -30,9 +30,10 @@ struct book {
  */
 struct book* make_buy_book() {
     book_t *bk = (book_t*)ck_malloc(sizeof(book_t), "make_buy_book");
-    bk->heap = (order_t**)ck_malloc(sizeof(order_t*) * 10, "make_buy_book");
     bk->slots = 10;
     bk->occupied = 0;
+    bk->heap = (order_t**)ck_malloc(sizeof(order_t*) * 10, 
+            "make_buy_book");
     bk->type = BUY_BOOK;
     for (int i = 0; i<bk->slots; i++) {
         bk->heap[i] = NULL;
@@ -46,9 +47,10 @@ struct book* make_buy_book() {
  */
 struct book* make_sell_book(){
     book_t *bk = (book_t*)ck_malloc(sizeof(book_t), "make_sell_book");
-    bk->heap = (order_t**)ck_malloc(sizeof(order_t*) * 10, "make_sell_book");
     bk->slots = 10;
     bk->occupied = 0;
+    bk->heap = (order_t**)ck_malloc(sizeof(order_t*) * 10, 
+            "make_sell_book");
     bk->type = SELL_BOOK;
     for (int i = 0; i<bk->slots; i++) {
         bk->heap[i] = NULL;
@@ -163,7 +165,7 @@ void add_order(order_t *o, struct book *bk) {
         bk->heap = (order_t**)ck_realloc(bk->heap, 
                 sizeof(order_t*) * (bk->slots + 10), "add_order");
         bk->slots += 10;
-        for (int i = bk->occupied; i<bk->slots; i++) {
+        for (int i = (bk->occupied - 1); i<bk->slots; i++) {
             bk->heap[i] = NULL;
         }
     }

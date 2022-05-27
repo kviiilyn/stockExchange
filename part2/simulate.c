@@ -93,6 +93,7 @@ int main(int argc, char **argv) {
             } 
         }
         if (feof(fp) && last_order_done) {
+            free(order_s);
             break;
         } else {
             process_order_write_ar(ex, order_s, time, ofp);

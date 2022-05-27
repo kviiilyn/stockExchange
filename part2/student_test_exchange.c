@@ -40,6 +40,38 @@ char *sample_orders[] =
 #define NUM_SAMPLE_ORDERS (sizeof(sample_orders)/sizeof(char *))  
 
 
+char *sample_orders_2[] =
+  { "I,UOCCS,A,S,1,100,1",
+  "I,UOCCS,A,S,1,100,2",
+  "I,UOCCS,A,S,1,100,3",
+  "I,UOCCS,A,S,1,100,4",
+  "I,UOCCS,A,S,1,100,5",
+  "I,UOCCS,A,S,1,100,6",
+  "I,UOCCS,A,S,1,100,7",
+  "I,UOCCS,A,S,1,100,8",
+  "I,UOCCS,A,S,1,100,9",
+  "I,UOCCS,A,S,1,100,10",
+  "I,UOCCS,A,S,1,100,11",
+  "I,UOCCS,A,S,1,100,12",
+  "I,UOCCS,A,B,1,1,13",
+  "I,UOCCS,A,B,1,1,14",
+  "I,UOCCS,A,B,1,1,15",
+  "I,UOCCS,A,B,1,1,16",
+  "I,UOCCS,A,B,1,1,17",
+  "I,UOCCS,A,B,1,1,18",
+  "I,UOCCS,A,B,1,1,19",
+  "I,UOCCS,A,B,1,1,20",
+  "I,UOCCS,A,B,1,1,21",
+  "I,UOCCS,A,B,1,1,22",
+  "I,UOCCS,A,B,1,1,23",
+  "I,UOCCS,A,B,1,1,24"
+  };
+
+// Uses the fact that sample-orders is stack-allocated to find its
+// size
+#define NUM_SAMPLE_ORDERS_2 (sizeof(sample_orders_2)/sizeof(char *))  
+
+
 /* 
  * run through a series of orders.
  *
@@ -144,6 +176,20 @@ void do_all() {
 }
 
 
+/* do_all: run all the sample orders in sample_order_2 the order listed */
+void do_sample_2() {
+    int sample1[NUM_SAMPLE_ORDERS_2];
+    int times1[NUM_SAMPLE_ORDERS_2];
+
+    for (int i=0; i < NUM_SAMPLE_ORDERS_2; i++) {
+        sample1[i] = i;
+        times1[i] = 10*i;
+    }
+
+    run_test(sample_orders_2, NUM_SAMPLE_ORDERS_2, sample1, NUM_SAMPLE_ORDERS_2, times1);
+}
+
+
 /* do_handout: run a test with the sample orders from
  *  the writeup from Part 1
  */
@@ -178,14 +224,14 @@ void do_handout() {
 int main() {
   // uncomment to check exchange constructor and free before trying
   // any orders.
-  do_none();
+  //do_none();
 
-do_a_few();
+//do_a_few();
 
     // uncomment to process all the samples order
-  do_all();
+  //do_all();
 
-  do_handout();
+  //do_handout();
 
     /*
     printf("\n\n----- testing swap ----- \n\n");
@@ -208,10 +254,13 @@ do_a_few();
     char j = int_to_char(i);
     printf("%c", j);
     */
+ 
+ // testing if there is an issue reallocating 
+ //do_sample_2();
 
 
 
-  do_cancel();
+  //do_cancel();
 }
 
 

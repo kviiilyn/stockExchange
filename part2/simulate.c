@@ -69,10 +69,12 @@ int main(int argc, char **argv) {
     int c;
     char a = 'a';
 
-    char *order_s = ck_malloc(sizeof(char) * MAX_ORDER_LEN, 
-            "Unable to allocate order_s");
+    /*char *order_s = ck_malloc(sizeof(char) * MAX_ORDER_LEN, 
+            "Unable to allocate order_s"); */
 
     while (!feof(fp)) {
+        char *order_s = ck_malloc(sizeof(char) * MAX_ORDER_LEN, 
+            "Unable to allocate order_s");
         for (int i = 0;; i++) {
             c = fgetc(fp);
             if (feof(fp)) {
@@ -87,14 +89,21 @@ int main(int argc, char **argv) {
             }
         }
         if (feof(fp)) {
+            free(order_s);
             break;
         }
         process_order_write_ar(ex, order_s, time, ofp);
         time++;
+        free(order_s);
     }
+
+    free_exchange(ex);
+    fclose(fp);
+    fclose(ofp);
+    //free(order_s);
     free(openf);
     free(outf);
-    fclose(fp);
+    
     
 }
 
